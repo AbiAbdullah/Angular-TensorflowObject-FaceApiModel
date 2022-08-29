@@ -102,7 +102,7 @@ export class FaceapiComponent implements OnInit {
           bottomRight
         ).draw(canvas);
       }, 100);
-  
+  this.faceMatch()
   
   }
   
@@ -114,5 +114,36 @@ export class FaceapiComponent implements OnInit {
      this. predictedAges.reduce((total: any, a: any) => total + a) / this.predictedAges.length;
     return avgPredictedAge;
   }
+  
+  async faceMatch(){
+    const referenceImage = await faceapi.fetchImage('assets/images/abi.png');
 
+    console.log(referenceImage instanceof HTMLImageElement) // true
+
+// displaying the fetched image content
+// const myImg:any = document.getElementById('myImg')
+//    myImg['src'] = referenceImage.src
+    const results = await faceapi
+  .detectAllFaces(referenceImage, new faceapi.TinyFaceDetectorOptions())
+  .withFaceLandmarks()
+  .withFaceDescriptors()
+
+if (!results.length) {
+  return
+}
+
+// create FaceMatcher with automatically assigned labels
+// from the detection results for the reference image
+const faceMatcher = new faceapi.FaceMatcher(results);
+
+const singleResult = await faceapi
+  .detectSingleFace(referenceImage, new faceapi.TinyFaceDetectorOptions())
+  .withFaceLandmarks()
+  .withFaceDescriptor()
+
+if (singleResult) {
+  const bestMatch = faceMatcher.findBestMatch(singleResult.descriptor)
+  console.log(bestMatch.toString())
+}
+  }
 }
